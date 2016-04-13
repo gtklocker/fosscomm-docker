@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Docker</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Condensed&subset=latin,greek);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu:400,700,400italic&subset=latin,greek);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Ubuntu'; }
+      h1, h2, h3, h4 {
+        font-family: 'Ubuntu Condensed';
+        font-weight: normal;
+      }
+      /*
+      a, a > code {
+        color: rgb(249, 38, 114);
+        text-decoration: none;
+      }
+      code {
+        background: #e7e8e2;
+        border-radius: 5px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
+      #slideshow .slide .content code {
+        font-size: 0.8em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
+      */
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+        right: 3em;
+      }
+
+      img {
+        max-width: 100%;
+      }
+
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+      }
+
+      .red {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js"></script>
+    <script>
+      var slideshow = remark.create({
+        sourceUrl: 'presentation.md'
+      });
+    </script>
+  </body>
+</html>
