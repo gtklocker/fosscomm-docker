@@ -754,7 +754,83 @@ EXPOSE <port> [<port>...]
 
 # Dockerfiles tips'n'tricks
 
-TODO
+Σκεφτείτε το εξής σενάριο
+- Δημιουργούμε έναν container απο ένα image μεγέθους 200MB.
+- Κάνουμε κάτι στον container που παίρνει πάρα πολύ χώρο (ας πούμε 1GB).
+- Κάνουμε commit σε ένα image, έστω ότι το λέμε `big_image`. Το `big_image` θα έχει μέγεθος λίγο πάνω από 1GB.
+- Δημιουργούμε έναν container από το `big_image`, σβήνουμε το 1GB που αποκτήσαμε πριν.
+- Κάνουμε commit αυτό τον container σε ένα νεο image.
+- Τι μέγεθος θα έχει αυτό το image;
+
+---
+
+# Dockerfiles tips'n'tricks
+
+```
+➜  ~ docker run --name initial_container ubuntu dd if=/dev/urandom of=/bigfile bs=1M count=1024
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB) copied, 68.8672 s, 15.6 MB/s
+➜  ~ docker commit initial_container big_image
+sha256:a8e2ce2cfa2ca6cda93e999d9ec7785ab8f9a4b7f37a01366c012a5413db5c59
+➜  ~ docker images|grep big_image
+big_image                     latest              a8e2ce2cfa2c        2 minutes ago       1.262 GB
+➜  ~ docker run --name big_container big_image rm /bigfile
+➜  ~ docker commit big_container what_size_image
+sha256:b1d57b55d6b48438fc672b2b31012c4da3b576442b8977264e248ad0190b0d5b
+➜  ~ docker images|grep what_size_image
+what_size_image               latest              b1d57b55d6b4        10 seconds ago      1.262 GB
+```
+
+---
+
+# Dockerfiles tips'n'tricks
+
+```
+➜  ~ docker history what_size_image
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+b1d57b55d6b4        11 minutes ago      rm /bigfile                                     0 B
+a8e2ce2cfa2c        14 minutes ago      dd if=/dev/urandom of=/bigfile bs=1M count=1024 1.074 GB
+2a274e3405ec        9 months ago        /bin/sh -c #(nop) CMD ["/bin/bash"]             0 B
+df697c8b1bf4        9 months ago        /bin/sh -c sed -i 's/^#\s*\(deb.*universe\)$/   1.895 kB
+371166fb96e0        9 months ago        /bin/sh -c echo '#!/bin/sh' > /usr/sbin/polic   194.5 kB
+69191ca023af        9 months ago        /bin/sh -c #(nop) ADD file:c8f078961a543cdefa   188.1 MB
+```
+
+---
+
+# Dockerfiles tips'n'tricks
+
+Παρόλο που σβήσαμε το αρχείο στο τελευταίο layer, το image ακόμα έχει μέγεθος πάνω από 1GB.
+
+Αυτό συμβαίνει γιατί το καινούριο layer που φτιάξαμε με το `rm /bigfile` είναι πάνω από τα υπόλοιπα (συμπεριλαμβανομένου και αυτού που βάλαμε το 1GB αρχείο).
+
+Από τη στιγμή που βασιζόμαστε σε κάποιο image, το μέγεθος οποιουδήποτε νεου image βασισμένου σε αυτό μπορεί μόνο να αυξηθεί.
+
+Ο τρόπος που το union filesystem σβήνει το `/bigfile` είναι βάζοντας ένα whiteout αρχείο στο top layer εκεί που βρισκόταν το reference στο αρχείο σε χαμηλότερο layer.
+
+---
+
+class: center, middle
+
+![](img/aufs-delete.jpg)
+
+---
+
+# Dockerfiles tips'n'tricks
+
+- Γιατί παίζει ρόλο αυτό;
+- Προσπαθούμε να κάνουμε optimize το μέγεθος στα images μας.
+- Έτσι έχει νόημα σε κάθε `RUN` να φροντίζουμε όταν τρέχουμε κάποιο command να προσέχουμε κατόπιν:
+    - Όταν κάνουμε compile να σβήνουμε τα binaries πριν το τέλος του instruction.
+    - Να σβήνουμε caches πριν το τέλος του instruction, πχ. στο apt-get
+
+```dockerfile
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y lolcat && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+```
 
 ---
 
