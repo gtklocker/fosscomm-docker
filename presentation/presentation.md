@@ -752,4 +752,38 @@ EXPOSE <port> [<port>...]
 
 ---
 
-# Docker hipster
+# Dockerfiles tips'n'tricks
+
+TODO
+
+---
+
+class: inverse, center, middle
+
+# Docker powertools
+
+---
+
+# docker-compose
+
+TODO
+
+---
+
+# docker-machine
+
+TODO
+
+---
+
+class: inverse, center, middle
+
+# ting demo
+
+---
+
+# Ευχαριστώ για την προσοχή σας!
+
+Πλεον ξέρετε Docker! 😅🙌🎉🎉
+
+Ερωτήσεις;
