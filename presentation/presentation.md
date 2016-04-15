@@ -1,6 +1,6 @@
 class: inverse, center, middle
 
-# Docker
+![](img/docker-logo.png)
 ### FOSSCOMM 2016
 #### Κωστής Καραντίας - @gtklocker
 
