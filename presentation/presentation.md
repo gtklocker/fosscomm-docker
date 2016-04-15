@@ -8,6 +8,8 @@ class: inverse, center, middle
 
 # Γιατί Docker;
 
+TODO: matrix from hell
+
 Πόσες φορές έχετε έρθει αντιμέτωποι με αυτό;
 ```
 $ pip install psycopg2
@@ -212,26 +214,286 @@ v0.10.25
 
 ---
 
+# docker run -d
+
+---
+
 # Docker Hub
 
+- Το ubuntu image που χρησιμοποιήσαμε είναι από το Docker Hub.
+- Όταν κάνουμε run ένα image, το docker είτε
+    - Το χρησιμοποιεί αν υπάρχει ήδη τοπικά.
+    - Προσπαθεί να το βρει στο Docker Hub και αν το βρεί το κάνει pull και το χρησιμοποιεί.
+- Υπάρχει ένα ξεχωριστό command για να κατεβάσουμε ένα image απο το Docker Hub.
+```
+TODO docker pull output
+```
+- Μπορούμε να τρέξουμε και να κάνουμε pull κάποια εικόνα από το Docker Hub με συγκεκριμένο tag.
+- Όταν κάνουμε pull χωρίς το `user` κομμάτι που είδαμε πριν εννοείται πως `user=library` (επίσημα images).
+- Όταν κάνουμε pull χωρίς το `tag` κομμάτι που είδαμε πριν εννοείται πως `tag=latest`.
+
 ---
 
-# docker pull/push
+# Docker Hub
+
+- Αφού έχουμε φτιάξει το image μας μπορούμε να κάνουμε push στο Docker Hub.
+- Χρειάζεται πρώτα να φτιάξουμε ένα account, είτε στο hub.docker.com είτε με το `docker login`.
+
+```
+➜  ~ docker login
+Username: gtklocker
+Password:
+Email: karantiaskostis@gmail.com
+WARNING: login credentials saved in /Users/gtklocker/.docker/config.json
+Login Succeeded
+➜  ~ docker push gtklocker/nodejs:v0.10.25
+The push refers to a repository [docker.io/gtklocker/nodejs]
+3f1c5faeea3b: Pushed
+5f70bf18a086: Mounted from docker/whalesay
+1debe0af080b: Pushed
+3a669db069a2: Pushed
+d0df3aaac661: Pushed
+v0.10.25: digest: sha256:8d4549203fcaa204fff7ecc0f7a164f4d0672be22fced43db251eee02e924d69 size: 4399
+```
+
+- Αφού ανέβει μπορεί οποιοσδήποτε στον κόσμο απλά να χρησιμοποιήσει το image μας με όνομα `gtklocker/nodejs:v0.10.25`.
+- Μπορούμε να ψάξουμε images στο Hub με `docker search`.
 
 ---
 
-# AUFS/COW
+class: dive-deep, center, middle
+
+# Docker internals
+
+---
+
+# Moar images
+
+- Το filesystem των images είναι AUFS.
+- Όταν κάναμε commit πριν, φτιάξαμε απλά ένα layer/patch/diff/delta για το ubuntu image.
+- Μπορούμε να δούμε το ιστορικό layers μιας εικόνας με το `docker history`.
+
+```
+➜  ~ docker history gtklocker/nodejs:v0.10.25
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+eafb3beaebe8        13 hours ago        /bin/bash                                       47.2 MB
+2a274e3405ec        9 months ago        /bin/sh -c #(nop) CMD ["/bin/bash"]             0 B
+df697c8b1bf4        9 months ago        /bin/sh -c sed -i 's/^#\s*\(deb.*universe\)$/   1.895 kB
+371166fb96e0        9 months ago        /bin/sh -c echo '#!/bin/sh' > /usr/sbin/polic   194.5 kB
+69191ca023af        9 months ago        /bin/sh -c #(nop) ADD file:c8f078961a543cdefa   188.1 MB
+```
+
+---
+
+# Moar images
+
+![](img/aufs-layers.jpg)
+
+---
+
+# Moar containers
+
+- Μοιάζουν με συνδυασμός chroot + cgroups + namespace isolation.
+- Τα cgroups περιορίζουν resources όπως
+    - RAM
+    - CPU
+    - I/O
+- Isolation υπάρχει σε
+    - PID isolation: ένα group διεργασιών δε μπορεί να δει άλλα PIDs εκτός από τα δικά του
+    - Mount isolation: ένα group διεργασιών μπορεί να έχει εντελώς δικά του mount points
+    - User isolation: ένα group διεργασιών μπορεί να δει μόνο τα δικά του user ids
+    - και άλλα...
+- Όλα αυτά είναι πολύ πρόσφατα (Linux) kernel features.
+- Το docker χρησιμοποιεί το libcontainer που διαχειρίζεται όλα αυτά.
+
+---
+
+# Overhead
+
+- Τα processes είναι isolated όμως τρέχουν κανονικά στο host.
+- Επομένως δεν υπάρχει **CPU performance hit**.
+- Το **memory performance hit** είναι επίσης σχεδόν μηδαμινό.
+- Όπως και το **network performance hit**.
+- 😄
 
 ---
 
 # Networking
 
+Ας τρέξουμε το image του nginx.
+
+```
+➜  ~ docker run -d nginx
+4a5574206216a269cec6a69fac949032764d09795e524a322b7de10b3848dc15
+```
+
+---
+
+class: center, middle
+
+![](img/ports-not-enabled.png)
+
+---
+
+# Networking
+
+Γιατί; Ίσως ένα `docker ps` να διαλευκάνει την υπόθεση.
+
+```
+➜  ~ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+4a5574206216        nginx               "nginx -g 'daemon off"   2 seconds ago       Up 1 seconds        80/tcp, 443/tcp     jovial_khorana
+```
+
+- Βλέπουμε ότι κάτι υπάρχει στην port 80, αλλά γιατί δε μπορούμε να το δούμε;
+- Πρέπει να πούμε στο docker να κάνει *map* την 80 σε κάποια port στο host μας ώστε να μπορούμε να τη δούμε. 
+- Το κάνουμε με το `-p <host port>:<container port>` option στο run.
+
+```
+➜  ~ docker run -d -p 80:80 nginx
+e40b303836c20a023f16620abd68e64986de877e05a6bd17be23e48615c2bf0f
+```
+
+---
+
+class: center, middle
+
+![](img/ports-enabled.png)
+
+---
+
+# Networking
+
+Μπορούμε να δούμε περισσότερες λεπτομέρειες για τις ports του container μας με το `ps` ή και το `inspect`.
+
+```
+➜  ~ docker inspect high_newton|grep '"Ports"' -A 8
+            "Ports": {
+                "443/tcp": null,
+                "80/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "80"
+                    }
+                ]
+            },
+➜  ~ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                         NAMES
+e40b303836c2        nginx               "nginx -g 'daemon off"   4 minutes ago       Up 3 minutes        0.0.0.0:80->80/tcp, 443/tcp   high_newton
+```
+
+---
+
+# Environment variables
+
+- Με `-e KEY=VALUE` μπορούμε να περνάμε environment variables στους containers μας.
+- Τι environment variables περιμένει το κάθε image είναι συνήθως documented στη σελίδα του στο Docker Hub.
+πχ. PostgreSQL
+
+![](img/postgres-env.png)
+
 ---
 
 # Links
+
+Ας τρέξουμε μια ένα λίγο περίπλοκο web app. Το `mssola/todo` φαίνεται να είναι ένα Todo app.
+
+Διαβάζουμε το README του στο Docker Hub για να πάρουμε μια ιδέα για το πώς να το τρέξουμε.
+
+---
+
+class: center, middle
+
+![](img/todo-hub-readme.png)
+
+---
+
+# Links
+
+- Θα τρέξουμε έναν container για την PostgreSQL που χρειάζεται το todo app μας (db container).
+- Θα κάνουμε τα migrations που χρειάζεται για να τρέξει σωστά.
+- Τρέχοντας το todo app container το ενημερώνουμε για ένα link με το db container (με `--link <container id>:<alias>`).
+- Το alias που δηλώνουμε έχει πολλές ιδιότητες. Μια από αυτές είναι ότι ο container μας βλέπει τον container που του κάναμε link στο host `<alias>`.
+- Επομένως το todo app container μας μπορεί να δει την postgres στο db:5432.
+
+```
+➜  ~ docker run -d --name db -e POSTGRES_PASSWORD=suchsecretwow -e POSTGRES_DB=todo-dev postgres
+50779a64f832f42f7bcfa4e4a3c525117fa03e024d56a81f1adeaebfa51b5020
+➜  ~ docker exec -i db psql -U postgres todo-dev < tables.sql
+CREATE TABLE
+CREATE TABLE
+➜  ~ docker run -d --name web -e TODO_DB_PASSWORD=suchsecretwow -e TODO_DB_HOST=db --link db:db -p 3000:3000 mssola/todo
+abb9a566115a867afecc2b3e01fcf73a3fd7ae594dfe9941a10a0637e8213628
+➜  ~ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+abb9a566115a        mssola/todo         "./todo"                 23 hours ago        Up 36 seconds       0.0.0.0:3000->3000/tcp   web
+50779a64f832        postgres            "/docker-entrypoint.s"   23 hours ago        Up 41 seconds       5432/tcp                 db
+```
+
+---
+
+class: center, middle
+
+![](img/todo-app-running.png)
+
+---
+
+# Links
+
+Όχι, δε σας φαίνεται μόνο, είναι λίγη αλλά και πάλι αρκετή δουλειά για να τρέξουμε μια τέτοια εφαρμογή.
+
+Θα δούμε έναν καλύτερο τρόπο στη συνέχεια.
+
+---
+
+# Volumes
+
+- Μπορούμε να μοιραζόμαστε δεδομένα με το host OS μέσω volumes.
+- `-v <host path>:<container mountpoint>`
+
+```
+➜  mkdir -p mydockerfiles/{1..10}
+➜  cd mydockerfiles
+➜  docker run --rm -v `pwd`:/mnt/host ubuntu ls -la /mnt/host
+total 4
+drwxr-xr-x 1 1000 staff  408 Apr 15 12:21 .
+drwxr-xr-x 3 root root  4096 Apr 15 12:22 ..
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 1
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 10
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 2
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 3
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 4
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 5
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 6
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 7
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 8
+drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 9
+```
+
+---
+
+# Volumes
+
+- Μπορούμε να ορίσουμε αν το volume θα είναι read-only.
+- `-v <host path>:<container mountpoint>:ro`
+
+```
+➜  docker run --rm -v `pwd`:/mnt/host:ro ubuntu touch /mnt/host/somefile
+touch: cannot touch '/mnt/host/somefile': Read-only file system
+```
 
 ---
 
 # Volumes
 
 ---
+
+# Privileged containers
+
+---
+
+# Dockerfiles
+
+---
+
+# Docker hipster
