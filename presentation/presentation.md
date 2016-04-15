@@ -116,6 +116,7 @@ a8c81857edd9        ubuntu              "/bin/bash"         6 seconds ago       
 
 # Χρήσιμες λειτουργίες.red[\*]
 
+- `docker create`: σαν το run, αλλά δημιουργεί έναν container χωρίς να τον ξεκινήσει
 - `docker pause $name`: παγώνει την εκτέλεση του container
 - `docker unpause $name`
 - `docker stop $name`: τερματίζει την εκτέλεση του container
@@ -123,7 +124,7 @@ a8c81857edd9        ubuntu              "/bin/bash"         6 seconds ago       
     - Με `docker ps -a` μπορούμε να δούμε όλους τους containers, ακόμα και αυτούς που είναι stopped.
 - `docker kill $name`: σκοτώνει τον container
     - Στέλνει SIGKILL στο process του container.
-- `docker start $name`: ξαναξεκινάει έναν stopped container
+- `docker start $name`: ξεκινάει έναν stopped/created container
 - `docker logs $name`
 - `docker attach $name`: μας συνδέει με το command που τρέχει ο container μας (αν πχ. το container τρέχει bash μας βάζει στο bash prompt)
 - `docker rm $name`: διαγράφει έναν σταματημένο container (υπάρχει και το `rm -f` για running containers)
@@ -228,7 +229,7 @@ v0.10.25
 ```
 TODO docker pull output
 ```
-- Μπορούμε να τρέξουμε και να κάνουμε pull κάποια εικόνα από το Docker Hub με συγκεκριμένο tag.
+- Μπορούμε να τρέξουμε και να κάνουμε pull κάποιο image από το Docker Hub με συγκεκριμένο tag.
 - Όταν κάνουμε pull χωρίς το `user` κομμάτι που είδαμε πριν εννοείται πως `user=library` (επίσημα images).
 - Όταν κάνουμε pull χωρίς το `tag` κομμάτι που είδαμε πριν εννοείται πως `tag=latest`.
 
@@ -269,7 +270,9 @@ class: dive-deep, center, middle
 
 # Moar images
 
-- Το filesystem των images είναι AUFS.
+- Το filesystem των images είναι ένα union filesystem.
+    - Αυτό σημαίνει ότι παίρνει πολλά layers από filesystems και τα συνδυάζει.
+    - Συνήθως overlayfs ή AUFS.
 - Όταν κάναμε commit πριν, φτιάξαμε απλά ένα layer/patch/diff/delta για το ubuntu image.
 - Μπορούμε να δούμε το ιστορικό layers μιας εικόνας με το `docker history`.
 
@@ -293,15 +296,16 @@ df697c8b1bf4        9 months ago        /bin/sh -c sed -i 's/^#\s*\(deb.*univers
 
 # Moar containers
 
-- Μοιάζουν με συνδυασμός chroot + cgroups + namespace isolation.
-- Τα cgroups περιορίζουν resources όπως
+- Μοιάζουν με συνδυασμό chroot + cgroups + namespace isolation.
+- Τα cgroups επιτρέπουν να έχουμε groups απο processes.
+- Μπορούμε να περιορίσουμε resources σε groups όπως:
     - RAM
     - CPU
     - I/O
 - Isolation υπάρχει σε
-    - PID isolation: ένα group διεργασιών δε μπορεί να δει άλλα PIDs εκτός από τα δικά του
-    - Mount isolation: ένα group διεργασιών μπορεί να έχει εντελώς δικά του mount points
-    - User isolation: ένα group διεργασιών μπορεί να δει μόνο τα δικά του user ids
+    - PID: ένα group διεργασιών δε μπορεί να δει άλλα PIDs εκτός από τα δικά του
+    - Mount: ένα group διεργασιών μπορεί να έχει εντελώς δικά του mount points
+    - User: ένα group διεργασιών μπορεί να δει μόνο τα δικά του user ids (not used by default)
     - και άλλα...
 - Όλα αυτά είναι πολύ πρόσφατα (Linux) kernel features.
 - Το docker χρησιμοποιεί το libcontainer που διαχειρίζεται όλα αυτά.
@@ -367,16 +371,8 @@ class: center, middle
 Μπορούμε να δούμε περισσότερες λεπτομέρειες για τις ports του container μας με το `ps` ή και το `inspect`.
 
 ```
-➜  ~ docker inspect high_newton|grep '"Ports"' -A 8
-            "Ports": {
-                "443/tcp": null,
-                "80/tcp": [
-                    {
-                        "HostIp": "0.0.0.0",
-                        "HostPort": "80"
-                    }
-                ]
-            },
+➜  ~ docker inspect -f '{{ .NetworkSettings.Ports }}' high_newton
+map[443/tcp:[] 80/tcp:[{0.0.0.0 80}]]
 ➜  ~ docker ps
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                         NAMES
 e40b303836c2        nginx               "nginx -g 'daemon off"   4 minutes ago       Up 3 minutes        0.0.0.0:80->80/tcp, 443/tcp   high_newton
