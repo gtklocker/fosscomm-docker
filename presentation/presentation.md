@@ -215,7 +215,20 @@ v0.10.25
 
 ---
 
-# docker run -d
+# Άλλα χρήσιμα commands
+
+- `docker run -d`: τρέχει τον container χωρίς να κάνει attach (σαν create & start)
+- `docker exec`: τρέχει commands σε έναν running container, πχ
+```
+➜  ~ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                         NAMES
+5c232174cef1        nginx               "nginx -g 'daemon off"   About an hour ago   Up About an hour    0.0.0.0:80->80/tcp, 443/tcp   jolly_wozniak
+➜  ~ docker exec jolly_wozniak ps aux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.2  31500  4412 ?        Ss   14:31   0:00 nginx: master process nginx -g daemon off;
+nginx       12  0.0  0.1  31876  2752 ?        S    14:31   0:00 nginx: worker process
+root        13  0.0  0.0  17492  2024 ?        Rs   16:20   0:00 ps aux
+```
 
 ---
 
@@ -227,7 +240,12 @@ v0.10.25
     - Προσπαθεί να το βρει στο Docker Hub και αν το βρεί το κάνει pull και το χρησιμοποιεί.
 - Υπάρχει ένα ξεχωριστό command για να κατεβάσουμε ένα image απο το Docker Hub.
 ```
-TODO docker pull output
+➜  ~ docker pull alpine
+Using default tag: latest
+latest: Pulling from library/alpine
+420890c9e918: Already exists
+Digest: sha256:9cacb71397b640eca97488cf08582ae4e4068513101088e9f96c9814bfda95e0
+Status: Downloaded newer image for alpine:latest
 ```
 - Μπορούμε να τρέξουμε και να κάνουμε pull κάποιο image από το Docker Hub με συγκεκριμένο tag.
 - Όταν κάνουμε pull χωρίς το `user` κομμάτι που είδαμε πριν εννοείται πως `user=library` (επίσημα images).
