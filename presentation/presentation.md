@@ -312,6 +312,39 @@ df697c8b1bf4        9 months ago        /bin/sh -c sed -i 's/^#\s*\(deb.*univers
 
 ---
 
+# scratch image
+
+Υπάρχει ένα ειδικό image που λέγεται scratch και δεν περιέχει τίποτα.
+
+Θα φτιάξουμε το δικό μας Debian image from scratch!
+
+```
+➜  ~  sudo debootstrap stable debian
+[...]
+➜  ~  sudo tar -C debian -c .|docker import - debian:stable-fromscratch
+sha256:8ead5b041077494ac5ebf2cc43974c30e3cb936caca453632b37c4e728b56839
+➜  ~  docker images
+REPOSITORY          TAG                  IMAGE ID            CREATED             SIZE
+debian              stable-fromscratch   8ead5b041077        5 seconds ago       282.6 MB
+node                latest               1de2e178998e        9 days ago          644.2 MB
+ubuntu              latest               a1e4ed2ac65b        10 days ago         187.9 MB
+docker/whalesay     latest               6b362a9f73eb        10 months ago       247 MB
+➜  ~  docker run -it --rm debian:stable-fromscratch /bin/bash
+root@90d33b955041:/# apt-get update
+Ign http://httpredir.debian.org stable InRelease
+Get:1 http://httpredir.debian.org stable Release.gpg [2373 B]
+Hit http://httpredir.debian.org stable Release
+[...]
+```
+
+---
+
+class: center, middle
+
+![](img/borat-great-success.png)
+
+---
+
 # Moar containers
 
 - Μοιάζουν με συνδυασμό chroot + cgroups + namespace isolation.
