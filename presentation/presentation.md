@@ -497,9 +497,207 @@ touch: cannot touch '/mnt/host/somefile': Read-only file system
 # Privileged containers
 
 TODO
+
 ---
 
 # Dockerfiles
+
+- Πίσω στα images, το να δημιουργούμε νεα images με commit δε φαίνεται τόσο πρακτικό.
+- Επίσης είναι δύσκολο να κάνεις reason για το τι αλλαγές έχουν ακριβώς γίνει σε ένα commit.
+- Γι'αυτό το Docker χρησιμοποιεί Dockerfiles για να χτίζει images με έναν πιο ξεκάθαρο τρόπο.
+- Χτίζουμε images με `docker build` στον κατάλογο που υπάρχει το Dockerfile μας.
+    - Ο κατάλογος στον οποίο βρίσκεται το Dockerfile είναι συνήθως το build context.
+
+```
+➜  docker build -t gtklocker/hello-fosscomm:v2 .
+Sending build context to Docker daemon 209.7 MB
+Step 1 : FROM docker/whalesay
+ ---> 6b362a9f73eb
+Step 2 : RUN apt-get update &&     DEBIAN_FRONTEND=noninteractive apt-get install -y lolcat &&     apt-get clean &&     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ ---> Using cache
+ ---> 5d0953e52f54
+Step 3 : CMD sh -c 'cowsay "Good morning FOSSCOMM!"|/usr/games/lolcat -f'
+ ---> Using cache
+ ---> 195593f1f362
+Successfully built 195593f1f362
+```
+
+---
+
+# Dockerfiles
+
+Το συντακτικό τους έχει αυτή την πολύ απλή μορφή:
+
+```dockerfile
+# Comment
+INSTRUCTION arguments
+```
+
+---
+
+# Dockerfiles
+
+Ας φτιάξουμε πάλι το δικό μας image με nodejs.
+
+```dockerfile
+FROM ubuntu
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+```
+
+Ένα μεγάλο ποσοστό Dockerfiles είναι περίπου ίδιο με αυτό.
+
+---
+
+# Dockerfiles
+
+Ας δούμε τι κάνει αυτό το Dockerfile:
+
+```dockerfile
+FROM ubuntu
+```
+
+Λέμε στο Docker να χρησιμοποιήσει το ubuntu image σαν βάση. Το πρώτο instruction πρέπει πάντα να είναι `FROM`.
+
+Όταν κάνουμε build φτιάχνει έναν προσωρινό container με αυτό το image, εκτελεί κάθε ένα από τα επόμενα instructions και μετά απο κάθε ένα κάνει commit (και run το commited image) μέχρι να φτάσει στο τέλος.
+
+```dockerfile
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+```
+
+Η εντολή μετά το `RUN` τρέχει μέσα σε αυτό τον container.
+
+---
+
+# Dockerfiles (CMD)
+
+```dockerfile
+CMD ["nodejs", "server.js"]
+```
+
+Το CMD ορίζει ως default command (το command που τρέχει αν δεν ορίσουμε κάποιο κατά το create/run) το `nodejs server.js`. Η μορφή που είναι γραμμένο λέγεται exec form και προτιμάται απο το
+
+```dockerfile
+CMD nodejs server.js
+```
+
+που θα ήταν επίσης έγκυρο.
+
+---
+
+# Dockerfiles (WORKDIR)
+
+```dockerfile
+WORKDIR /path/to/workdir
+```
+
+Σκεφτείτε το σαν cd για ολόκληρο το Dockerfile.
+
+*Quiz*: Είναι ίδιο με το
+```dockerfile
+RUN cd /path/to/workdir
+```
+?
+
+---
+
+# Dockerfiles (WORKDIR)
+
+```dockerfile
+WORKDIR /path/to/workdir
+```
+
+Σκεφτείτε το σαν cd για ολόκληρο το Dockerfile.
+
+*Quiz*: Είναι ίδιο με το
+```dockerfile
+RUN cd /path/to/workdir
+```
+?
+
+Όχι! Το `RUN` θα τρέξει, θα γίνει commit, και όταν τρέξει το commited image για να συνεχίσει το build το working directory πιθανότατα θα είναι άλλο!
+
+---
+
+# Dockerfiles (COPY)
+
+```dockerfile
+COPY <src> ... <dest>
+```
+
+Αντιγράφει το `<src>` στο `<dest>` μέσα στον container. Το `<src>` είναι relative path στο build context (και πρέπει να ανήκει αυστηρά μέσα σε αυτό!).
+
+πχ.
+```dockerfile
+COPY API/ /usr/src/app/
+```
+
+Αντιγράφει τα περιεχόμενα του API/ στο /usr/src/app.
+
+Αν τα paths μας περιέχουν whitespace χρησιμοποιούμε
+```dockerfile
+COPY ["<src>", ..., "<dest>"]
+```
+
+---
+
+# Dockerfiles (ENV)
+
+```dockerfile
+ENV <key> <value>
+```
+ή
+```dockerfile
+ENV <key>=<value> <secndkey>=<secndvalue> ...
+```
+
+Ορίζει environment variables που ισχύουν:
+- Κάθε φορά που τρέχει το image που θα φτιαχτεί (σαν το `-e` που είδαμε πριν)
+- Μέσα στο Dockerfile πχ.
+```dockerfile
+ENV repoPath /mystartup/app/seedroundversion
+WORKDIR ${repoPath}/src/
+```
+
+---
+
+# Dockerfiles (ENTRYPOINT)
+
+```dockerfile
+ENTRYPOINT ["executable", "param1", "param2"]
+```
+
+Κάνει το `docker run <args>` να συμπεριφέρεται σαν το executable που θα ορίσουμε. Το command (CMD) που θα ορίζαμε κανονικά, τώρα θα αποτελεί όρισμα για το entrypoint.
+
+πχ. αν ορίσουμε σαν entrypoint το ls και σαν command το -h τότε θα πάρουμε το help του ls μόλις τρέξουμε το image.
+
+Μπορούμε να το αλλάξουμε κατά το run/create με το argument `--entrypoint`.
+
+Το default ENTRYPOINT είναι το `/bin/sh -c`.
+
+---
+
+# Dockerfiles (VOLUME)
+
+```dockerfile
+VOLUME ["/data"]
+```
+
+Αντίστοιχο του `-v /data` που είδαμε πριν.
+
+---
+
+# Dockerfiles (EXPOSE)
+
+```dockerfile
+EXPOSE <port> [<port>...]
+```
+
+Λεει στο docker ότι κάτι κάνει listen στην `<port>`. Αυτός είναι ο τρόπος που το `docker ps` πριν ήξερε ότι κάτι υπάρχει στην port 80 του nginx container.
+
+Αν κάποιος container κάνει link με έναν που έχει exposed ports τότε μπορεί να τις δει και να επικοινωνήσει με τα services σε αυτές (όπως πριν το web app container με το Postgres container).
 
 ---
 
