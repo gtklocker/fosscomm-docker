@@ -842,7 +842,35 @@ class: inverse, center, middle
 
 # docker-compose
 
-TODO
+Το `docker-compose` μας βοηθάει να τρέξουμε περίπλοκες δομές από containers.
+
+Το παράδειγμα που είχαμε δει πριν με το todo app μπορεί να τρέξει πολύ πιο απλά απλά χρησιμοποιώντας το docker-compose.
+
+```yml
+web:
+  image: mssola/todo:latest
+  volumes:
+    - .:/go/src/github.com/mssola/todo
+  ports:
+    - 3000:3000
+  environment:
+    TODO_DB_NAME: todo-dev
+    TODO_DB_HOST: todo_db_1
+  links:
+    - db
+
+db:
+  image: library/postgres:9.4
+  volumes:
+    - ./db:/tmp/db
+  environment:
+    POSTGRES_DB: todo-dev
+```
+---
+
+# docker-compose
+
+Αρκεί ένα `docker-compose up` για να τρέξουν ό,τι containers χρειάζονται και όλα είναι ρυθμισμένα χωρίς να χρειάζεται να κάνουμε τίποτε.
 
 ---
 
