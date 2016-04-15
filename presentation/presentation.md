@@ -482,6 +482,16 @@ touch: cannot touch '/mnt/host/somefile': Read-only file system
 
 # Volumes
 
+Τα volumes χρησιμεύουν και απλά για να κάνουν persist τα δεδομένα ενός container. Υπάρχουν πολλοί λόγοι για κάτι τέτοιο.
+
+- Κανένα volume δε σβήνεται ποτέ (αυτόματα), ακόμα και αν ο container που το χρησιμοποιούσε έχει διαγραφεί.
+- Κάποια δεδομένα που θα δημιουργήσει ο container είναι ευαίσθητα και δε θέλουμε να τα χάσουμε, ανεξάρτητα του πως θα καταλήξει ο container.
+- Δεδομένα όπως logs, caches, γενικά είναι άχρηστα και δεν τα θέλουμε σε περίπτωση που κάνουμε commit.
+    - Performance: δε χρειάζεται να επεξεργάζεται το docker αυτά τα αρχεία πάνω απο το image layer
+- Reuse από άλλα containers (με `--volumes-from`).
+    - πχ. container με nginx έχει volume για τα logs, ένας άλλος container χρησιμοποιεί αυτό το volume για να βγάλει στατιστικά με βάση τα logs
+    - ή shared db
+
 ---
 
 # Privileged containers
