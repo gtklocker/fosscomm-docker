@@ -1,4 +1,4 @@
-class: inverse, center, middle
+class: center, middle
 
 ![](img/docker-logo.png)
 ### FOSSCOMM 2016
