@@ -915,3 +915,13 @@ class: inverse, center, middle
 Πλεον ξέρετε Docker! 😅🙌🎉🎉
 
 Ερωτήσεις;
+
+.footnote.rightcol[
+Ρωτήστε με αργότερα!
+- .lightblue[@gtklocker]
+- karantiaskostis@gmail.com
+```
+867F 1D46 FAB7 2B16 519D
+04DA DFD7 ACE7 6D9B 91BA
+```
+]
