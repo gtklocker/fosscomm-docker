@@ -882,7 +882,17 @@ db:
 
 # docker-machine
 
-TODO
+Το `docker-machine` αυτοματοποιεί τη διαδικασία του να τρέξουμε Docker οπουδήποτε.
+
+Είναι ο de-facto τρόπος να τρέξει κανείς Docker σε non-Linux host. (OSX, Windows)
+
+Επίσης μας επιτρέπει να χρησιμοποιήσουμε Docker σε ένα repote host σαν να είναι τοπικό.
+
+---
+
+class: inverse, center, middle
+
+# docker-machine demo
 
 ---
 
