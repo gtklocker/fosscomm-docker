@@ -14,25 +14,8 @@
         font-family: 'Ubuntu Condensed';
         font-weight: normal;
       }
-      /*
-      a, a > code {
-        color: rgb(249, 38, 114);
-        text-decoration: none;
-      }
-      code {
-        background: #e7e8e2;
-        border-radius: 5px;
-      }
       .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
-      .remark-code-line-highlighted     { background-color: #373832; }
-      #slideshow .slide .content code {
-        font-size: 0.8em;
-      }
-      #slideshow .slide .content pre code {
-        font-size: 0.9em;
-        padding: 15px;
-      }
-      */
+
       .footnote {
         position: absolute;
         bottom: 3em;
@@ -71,7 +54,11 @@
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js"></script>
     <script>
       var slideshow = remark.create({
-        sourceUrl: 'presentation.md'
+        ratio: '4:3',
+        sourceUrl: 'presentation.md',
+        navigation: {
+          scroll: false
+        }
       });
     </script>
   </body>
