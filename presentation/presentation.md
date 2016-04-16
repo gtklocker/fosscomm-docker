@@ -9,7 +9,7 @@ class: center, middle
 # Γιατί Docker;
 
 Πόσες φορές έχετε έρθει αντιμέτωποι με αυτό;
-```
+```xml
 $ pip install psycopg2
 Downloading/unpacking http://pypi.python.org/packages/source/p/psycopg2/psycopg2
 -2.4.tar.gz#md5=24f4368e2cfdc1a2b03282ddda814160
@@ -90,7 +90,7 @@ class: center, middle
 
 Θα τρέξουμε ένα container με το image του Ubuntu με το `docker run`.
 
-```
+```xml
 ➜  ~ docker run -it ubuntu /bin/bash
 root@ba97fbda8ad1:/# ls
 bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
@@ -112,7 +112,7 @@ Get:3 http://archive.ubuntu.com trusty-updates/main Sources [341 kB]
 - Κάθε container έχει πρόσβαση στο δίκτυο.
 - Σε κάθε container γίνεται αssign ένα id κι ένα όνομα.
 
-```
+```xml
 ➜  ~ docker ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 a8c81857edd9        ubuntu              "/bin/bash"         6 seconds ago       Up 6 seconds                            sad_carson
@@ -148,7 +148,7 @@ class: inverse, center, middle
 # Images
 
 Ας εγκαταστήσουμε nodejs στον container μας.
-```
+```xml
 root@a8c81857edd9:/# apt-get update
 [...]
 root@a8c81857edd9:/# apt-get install nodejs
@@ -171,7 +171,7 @@ v0.10.25
 - Οι αλλαγές που κάνουμε δεν αποθηκεύονται στο image (ubuntu image στην περίπτωση μας).
 - Μπορούμε να κρατήσουμε τις αλλαγές μας σε ένα καινούριο image με `docker commit $name`.
 
-```
+```xml
 ➜  ~ docker commit sad_carson
 sha256:641c3875ed8b1da49904d47aee0f0a6ad6928e41aa2220d3b192d32a91687b9a
 ➜  ~ docker images
@@ -186,7 +186,7 @@ ubuntu                        latest              2a274e3405ec        9 months a
 
 Και να τρέξουμε έναν container με αυτό το image.
 
-```
+```xml
 ➜  ~ docker run 641c3875ed8b nodejs --version
 v0.10.25
 ```
@@ -203,7 +203,7 @@ v0.10.25
     - Το κομμάτι `user/name` λέγεται και repository.
 - Μπορείτε να ορίσετε το δικό σας όνομα στο docker commit σαν έξτρα παράμετρο.
 
-```
+```xml
 ➜  ~ docker commit sad_carson gtklocker/nodejs:v0.10.25
 sha256:eafb3beaebe865c3267469c115889c2cd3c49b7115063ef1c93a089ee7ef7bdd
 ➜  ~ docker images
@@ -225,7 +225,7 @@ v0.10.25
 
 - `docker run -d`: τρέχει τον container χωρίς να κάνει attach (σαν create & start)
 - `docker exec`: τρέχει commands σε έναν running container, πχ
-```
+```xml
 ➜  ~ docker ps
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                         NAMES
 5c232174cef1        nginx               "nginx -g 'daemon off"   About an hour ago   Up About an hour    0.0.0.0:80->80/tcp, 443/tcp   jolly_wozniak
@@ -245,7 +245,7 @@ root        13  0.0  0.0  17492  2024 ?        Rs   16:20   0:00 ps aux
     - Το χρησιμοποιεί αν υπάρχει ήδη τοπικά.
     - Προσπαθεί να το βρει στο Docker Hub και αν το βρεί το κάνει pull και το χρησιμοποιεί.
 - Υπάρχει ένα ξεχωριστό command για να κατεβάσουμε ένα image απο το Docker Hub.
-```
+```xml
 ➜  ~ docker pull alpine
 Using default tag: latest
 latest: Pulling from library/alpine
@@ -264,7 +264,7 @@ Status: Downloaded newer image for alpine:latest
 - Αφού έχουμε φτιάξει το image μας μπορούμε να κάνουμε push στο Docker Hub.
 - Χρειάζεται πρώτα να φτιάξουμε ένα account, είτε στο hub.docker.com είτε με το `docker login`.
 
-```
+```xml
 ➜  ~ docker login
 Username: gtklocker
 Password:
@@ -300,7 +300,7 @@ class: dive-deep, center, middle
 - Όταν κάναμε commit πριν, φτιάξαμε απλά ένα layer/patch/diff/delta για το ubuntu image.
 - Μπορούμε να δούμε το ιστορικό layers μιας εικόνας με το `docker history`.
 
-```
+```xml
 ➜  ~ docker history gtklocker/nodejs:v0.10.25
 IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
 eafb3beaebe8        13 hours ago        /bin/bash                                       47.2 MB
@@ -324,7 +324,7 @@ df697c8b1bf4        9 months ago        /bin/sh -c sed -i 's/^#\s*\(deb.*univers
 
 Θα φτιάξουμε το δικό μας Debian image from scratch!
 
-```
+```xml
 ➜  ~  sudo debootstrap stable debian
 [...]
 ➜  ~  sudo tar -C debian -c .|docker import - debian:stable-fromscratch
@@ -383,7 +383,7 @@ class: center, middle
 
 Ας τρέξουμε το image του nginx.
 
-```
+```xml
 ➜  ~ docker run -d nginx
 4a5574206216a269cec6a69fac949032764d09795e524a322b7de10b3848dc15
 ```
@@ -400,7 +400,7 @@ class: center, middle
 
 Γιατί; Ίσως ένα `docker ps` να διαλευκάνει την υπόθεση.
 
-```
+```xml
 ➜  ~ docker ps
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
 4a5574206216        nginx               "nginx -g 'daemon off"   2 seconds ago       Up 1 seconds        80/tcp, 443/tcp     jovial_khorana
@@ -410,7 +410,7 @@ CONTAINER ID        IMAGE               COMMAND                  CREATED        
 - Πρέπει να πούμε στο docker να κάνει *map* την 80 σε κάποια port στο host μας ώστε να μπορούμε να τη δούμε. 
 - Το κάνουμε με το `-p <host port>:<container port>` option στο run.
 
-```
+```xml
 ➜  ~ docker run -d -p 80:80 nginx
 e40b303836c20a023f16620abd68e64986de877e05a6bd17be23e48615c2bf0f
 ```
@@ -427,7 +427,7 @@ class: center, middle
 
 Μπορούμε να δούμε περισσότερες λεπτομέρειες για τις ports του container μας με το `ps` ή και το `inspect`.
 
-```
+```xml
 ➜  ~ docker inspect -f '{{ .NetworkSettings.Ports }}' high_newton
 map[443/tcp:[] 80/tcp:[{0.0.0.0 80}]]
 ➜  ~ docker ps
@@ -469,7 +469,7 @@ class: center, middle
 - Το alias που δηλώνουμε έχει πολλές ιδιότητες. Μια από αυτές είναι ότι ο container μας βλέπει τον container που του κάναμε link στο host `<alias>`.
 - Επομένως το todo app container μας μπορεί να δει την postgres στο db:5432.
 
-```
+```xml
 ➜  ~ docker run -d --name db -e POSTGRES_PASSWORD=suchsecretwow -e POSTGRES_DB=todo-dev postgres
 50779a64f832f42f7bcfa4e4a3c525117fa03e024d56a81f1adeaebfa51b5020
 ➜  ~ docker exec -i db psql -U postgres todo-dev < tables.sql
@@ -504,7 +504,7 @@ class: center, middle
 - Μπορούμε να μοιραζόμαστε δεδομένα με το host OS μέσω volumes.
 - `-v <host path>:<container mountpoint>`
 
-```
+```xml
 ➜  mkdir -p mydockerfiles/{1..10}
 ➜  cd mydockerfiles
 ➜  docker run --rm -v `pwd`:/mnt/host ubuntu ls -la /mnt/host
@@ -530,7 +530,7 @@ drwxr-xr-x 1 1000 staff   68 Apr 15 12:21 9
 - Μπορούμε να ορίσουμε αν το volume θα είναι read-only.
 - `-v <host path>:<container mountpoint>:ro`
 
-```
+```xml
 ➜  docker run --rm -v `pwd`:/mnt/host:ro ubuntu touch /mnt/host/somefile
 touch: cannot touch '/mnt/host/somefile': Read-only file system
 ```
@@ -573,7 +573,7 @@ class: inverse, center, middle
 - Χτίζουμε images με `docker build` στον κατάλογο που υπάρχει το Dockerfile μας.
     - Ο κατάλογος στον οποίο βρίσκεται το Dockerfile είναι συνήθως το build context.
 
-```
+```xml
 ➜  docker build -t gtklocker/hello-fosscomm:v2 .
 Sending build context to Docker daemon 209.7 MB
 Step 1 : FROM docker/whalesay
@@ -780,7 +780,7 @@ EXPOSE <port> [<port>...]
 
 # Dockerfiles tips'n'tricks
 
-```
+```xml
 ➜  ~ docker run --name initial_container ubuntu dd if=/dev/urandom of=/bigfile bs=1M count=1024
 1024+0 records in
 1024+0 records out
@@ -800,7 +800,7 @@ what_size_image               latest              b1d57b55d6b4        10 seconds
 
 # Dockerfiles tips'n'tricks
 
-```
+```xml
 ➜  ~ docker history what_size_image
 IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
 b1d57b55d6b4        11 minutes ago      rm /bigfile                                     0 B
