@@ -553,7 +553,15 @@ touch: cannot touch '/mnt/host/somefile': Read-only file system
 
 # Privileged containers
 
-TODO
+- Κανονικά οι containers παρόλο που έχουν root δικαιώματα εσωτερικά δεν έχουν πρόσβαση σε devices του συστήματος.
+- Δε θα μπορούσε πχ. ένας malicious container να σας κάνει format το δίσκο.
+- Υπάρχει ένας τρόπος να δώσουμε σε έναν container όμως αυξημένα δικαιώματα σε devices του συστήματος μας.
+
+---
+
+class: inverse, center, middle
+
+# Privileged containers demo
 
 ---
 
